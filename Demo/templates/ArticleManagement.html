@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+
+
+
+{% block CDN %}
+<!-- import Vue -->
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
+
+<!-- import iview -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/iview@3.5.4/dist/styles/iview.css">
+<script src="https://cdn.jsdelivr.net/npm/iview@3.5.4/dist/iview.min.js"></script>
+
+<!-- import formCreate -->
+<script src="https://cdn.jsdelivr.net/npm/@form-create/iview/dist/form-create.min.js"></script>
+
+<!-- bootstrarptable.js -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+    integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+<link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.18.2/dist/bootstrap-table.min.css">
+<script src="https://unpkg.com/bootstrap-table@1.18.2/dist/bootstrap-table.min.js"></script>
+
+<!-- AXIOS and QS CDN -->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://cdn.bootcss.com/qs/6.5.1/qs.min.js"></script>
+
+<style>
+    textarea {
+        width: 100%
+    }
+
+    td>div {
+        height: inherit;
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="card text-center">
+
+    <div class="card-header" id="NavSelect">
+        <ul class="nav nav-pills card-header-pills">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" name="selectname" @click="SelectName('NewsData','最新消息')">最新消息</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " href="#" name="selectname" @click="SelectName('ProjectsData','計畫成果')">計畫成果</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " href="#" name="selectname" @click="SelectName('ActivitiesData','活動管理')">活動管理</a>
+            </li>
+            <button type="button" class="btn btn-success ml-auto" style="width:20%" onclick="AddForm()">
+                新增
+            </button>
+
+
+        </ul>
+    </div>
+
+    <div class="card-body">
+        <div id="table">
+            <table id="DataTbale">
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<!-- 新增、修改彈掉視窗 -->
+<div class="modal fade" id="FormModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="FormModalTitle"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="form">
+                    <div id="form-create"></div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger mr-auto" onclick="Remove_Axsio()"
+                    data-dismiss="modal">刪除</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+<!-- 照片彈掉視窗 -->
+<div class="modal fade" id="ImgModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ImgModalTitle">照片預覽</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <img id="ImgShow" src="" width="100%" height="100%">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">關閉</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+<script>
+
+    let DB, mode, AddJson, choose_id;
+    axios.defaults.xsrfCookieName = 'csrftoken' //need this for method:post
+    axios.defaults.xsrfHeaderName = 'X-CSRFToken' //need this for method:post
+
+
+    function ImgShow(ImgUrl) {
+        $("#ImgShow").attr("src", ImgUrl);
+        $('#ImgModal').modal('show')
+    }
+
+    function AddForm() {
+        if (mode != "add") {
+            mode = "add";
+            Form(AddJson);
+        }
+        $('#FormModal').modal('show')
+    }
+
+    function TableUpLoad(title_thead, title_body) {
+        $("#table").html('<table id="DataTbale"></table>')
+        $('#DataTbale').bootstrapTable({
+            columns: title_thead,
+            classes: 'table',
+            data: title_body,//所有資料
+            height: 450,
+            pagination: true, //使否要分頁
+
+            //可於ToolBar上顯示的按鈕
+            showColumns: true, //顯示/隱藏哪些欄位
+            showToggle: true, //名片式/table式切換
+            showPaginationSwitch: true, //分頁/不分頁切換
+            showRefresh: true, //重新整理
+            search: true, //查詢
+
+            onPageChange: function (currentPage, pageSize) {
+                console.log("目前頁數:" + currentPage + ",一頁顯示:" + pageSize + "筆");
+            },
+            pageSize: 15,
+            pageList: [10, 20, 50, 100],
+
+            formatRecordsPerPage: function (pageSize) {
+                return '&nbsp;&nbsp;每頁顯示' + pageSize + '筆';
+            },
+            formatShowingRows: function (fromIndex, toIndex, totalSize) {
+                var currentPage = Math.ceil(fromIndex / this.pageSize);
+                var totalPageCount = Math.ceil(totalSize / this.pageSize);
+                return '第' + currentPage + '頁&nbsp;&nbsp;共' + totalPageCount + '頁';
+            }
+        });
+        $("#DataTbale").bootstrapTable('hideColumn', 'id');
+    }
+
+    function DB_Axios() {//拿到該DB顯示的table跟form
+        axios({
+            url: 'DBAllData',
+            method: 'post',
+            responseType: 'json',
+            data: Qs.stringify({
+                "DB": DB
+            })
+        })
+            .then(function (response) {
+
+                title_thead = response.data.table_head
+                title_body = response.data.table_data
+
+                TableUpLoad(title_thead, title_body)
+                rule = response.data.AddForm_json
+                AddJson = rule
+                Form(rule)
+
+            })
+    }
+
+
+    function Data_Axsio(DBDataJson) { //把表單資料進去，有新增或修改模式
+        axios({
+            url: 'DBDataJson',
+            method: 'post',
+            responseType: 'json',
+            data: Qs.stringify({
+                "DB": DB,
+                'DBDataJson': DBDataJson,
+                'mode': mode,
+                'id': choose_id
+            })
+        })
+            .then(function (response) {
+                DB_Axios();
+                alert(response.data.MSG);
+            })
+    }
+
+
+    function Remove_Axsio() {
+        if (confirm("確認刪除？")) {
+            axios({
+                url: 'DBDataRemove',
+                method: 'post',
+                responseType: 'json',
+                data: Qs.stringify({
+                    "DB": DB,
+                    'id': choose_id
+                })
+            })
+                .then(function (response) {
+                    DB_Axios();
+                    alert(response.data.SMSG);
+                })
+        } else {
+            alert("已取消。");
+        }
+    }
+
+
+    function Form(rule) {
+        $("#form").html('<div id="form-create"></div>')
+
+        for (let i = 0; i < rule.length; i++) {
+            if (rule[i].hasOwnProperty("validate")) {
+                for (let j = 0; j < rule[i].validate.length; j++) {
+                    if (rule[i].validate[j].hasOwnProperty("validator"))
+                        rule[i].validate[j].validator = eval(rule[i].validate[j].validator)
+                }
+            }
+        }
+
+        const root = document.getElementById('form-create')
+
+        const $f = window.formCreate.create(
+            rule,
+            {
+                el: root,
+                onSubmit: function (formData) {
+                    // alert(JSON.stringify(formData))
+                    Data_Axsio(JSON.stringify(formData))
+                    $('#FormModal').modal('hide')
+                }
+            })
+    }
+    function Data_Axsio_Fix(id) {
+        mode = "fix"
+        choose_id = id
+        axios({
+            url: 'DBDataFix',
+            method: 'post',
+            responseType: 'json',
+            data: Qs.stringify({
+                "DB": DB,
+                "id": id
+            })
+        })
+            .then(function (response) {
+                x = response.data.Data
+                console.log(x)
+                Form(response.data.Data)
+                $('#FormModal').modal('show')
+            })
+    }
+
+
+    new Vue({
+        el: '#NavSelect', delimiters: ['[[', ']]'],
+        data: {
+        }, methods: {
+            SelectName: function (message, text) {
+                $(".active").removeClass("active")
+                $("a").each(function (index) {
+                    if ($(this).text() == text)
+                        $(this).addClass("active")
+                });
+                DB = message;
+                DB_Axios();
+                $("#FormModalTitle").text(text)
+            }
+        }, mounted() {
+            this.SelectName("NewsData", "最新消息");
+        }
+    })
+
+
+</script>
+
+{% endblock %}
