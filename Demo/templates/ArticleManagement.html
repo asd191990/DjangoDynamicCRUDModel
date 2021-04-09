@@ -44,13 +44,10 @@
     <div class="card-header" id="NavSelect">
         <ul class="nav nav-pills card-header-pills">
             <li class="nav-item">
-                <a class="nav-link active" href="#" name="selectname" @click="SelectName('NewsData','最新消息')">最新消息</a>
+                <a class="nav-link active" href="#" name="selectname" @click="SelectName('Personnel','人員管理')">人員管理</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link " href="#" name="selectname" @click="SelectName('ProjectsData','計畫成果')">計畫成果</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link " href="#" name="selectname" @click="SelectName('ActivitiesData','活動管理')">活動管理</a>
+                <a class="nav-link " href="#" name="selectname" @click="SelectName('Case','專案管理')">專案管理</a>
             </li>
             <button type="button" class="btn btn-success ml-auto" style="width:20%" onclick="AddForm()">
                 新增
@@ -176,10 +173,10 @@
                 return '第' + currentPage + '頁&nbsp;&nbsp;共' + totalPageCount + '頁';
             }
         });
-        $("#DataTbale").bootstrapTable('hideColumn', 'id');
+        // $("#DataTbale").bootstrapTable('hideColumn', 'id');#隱藏不要的欄位
     }
 
-    function DB_Axios() {//拿到該DB顯示的table跟form
+    function DB_Axios() {//取得最新的該DB的table跟form
         axios({
             url: 'DBAllData',
             method: 'post',
@@ -194,9 +191,8 @@
                 title_body = response.data.table_data
 
                 TableUpLoad(title_thead, title_body)
-                rule = response.data.AddForm_json
-                AddJson = rule
-                Form(rule)
+                AddJson = response.data.Form_json
+                Form(AddJson)
 
             })
     }
@@ -281,7 +277,6 @@
         })
             .then(function (response) {
                 x = response.data.Data
-                console.log(x)
                 Form(response.data.Data)
                 $('#FormModal').modal('show')
             })
@@ -303,7 +298,7 @@
                 $("#FormModalTitle").text(text)
             }
         }, mounted() {
-            this.SelectName("NewsData", "最新消息");
+            this.SelectName("Personnel", "最新消息");
         }
     })
 
