@@ -142,7 +142,7 @@
         $('#FormModal').modal('show')
     }
 
-    function TableUpLoad(title_thead, title_body) {
+    function TableUpLoad(title_thead, title_body) { //table載入
         $("#table").html('<table id="DataTbale"></table>')
         $('#DataTbale').bootstrapTable({
             columns: title_thead,
@@ -189,8 +189,7 @@
 
                 title_thead = response.data.table_head
                 title_body = response.data.table_data
-
-                TableUpLoad(title_thead, title_body)
+                TableUpLoad(title_thead, title_body)//把上面變數傳入
                 AddJson = response.data.Form_json
                 Form(AddJson)
 
@@ -217,7 +216,7 @@
     }
 
 
-    function Remove_Axsio() {
+    function Remove_Axsio() { //移除
         if (confirm("確認刪除？")) {
             axios({
                 url: 'DBDataRemove',
@@ -238,7 +237,7 @@
     }
 
 
-    function Form(rule) {
+    function Form(rule) { //表單重設
         $("#form").html('<div id="form-create"></div>')
 
         for (let i = 0; i < rule.length; i++) {
@@ -263,7 +262,7 @@
                 }
             })
     }
-    function Data_Axsio_Fix(id) {
+    function Data_Axsio_Fix(id) { //取得修正資料 並建立表單
         mode = "fix"
         choose_id = id
         axios({
